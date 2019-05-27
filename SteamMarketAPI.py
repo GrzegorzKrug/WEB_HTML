@@ -11,7 +11,7 @@ import requests
 cat_link = r'https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.wisegeek.com%2Fyoung-calico-cat.jpg&f=1'
 
 def grab_image(url):
-    req = requests.get(cat_link, stream=True)
+    req = requests.get(url, stream=True)
     req.raw.decode_content = True
     img = Image.open(req.raw)
     return img
@@ -23,11 +23,5 @@ file_pic = open('cat.png', 'wb')
 cat_img.save(file_pic)
 file_pic.close()
 
-# cat_img.show()  # Pillow
 plt.imshow(cat_img)  # Ploting
 plt.show()
-
-
-# image.show()
-
-# os.remove('cat.png')
