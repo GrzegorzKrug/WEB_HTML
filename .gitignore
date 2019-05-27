@@ -2,5 +2,6 @@
 *.bmp
 *.gif
 *.jpg
+*.txt
 *
 !*.py
