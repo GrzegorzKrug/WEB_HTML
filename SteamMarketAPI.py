@@ -7,7 +7,7 @@ from PIL import Image
 import matplotlib.pyplot as plt
 import json
 import requests
-
+#test
 cat_link = r'https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.wisegeek.com%2Fyoung-calico-cat.jpg&f=1'
 
 def grab_image(url):
