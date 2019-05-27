@@ -10,21 +10,21 @@ import requests
 
 cat_link = r'https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.wisegeek.com%2Fyoung-calico-cat.jpg&f=1'
 
-cat_r = requests.get(cat_link, stream=True)
-cat_img = Image.open(cat_r.raw)
+def grab_image(url):
+    req = requests.get(cat_link, stream=True)
+    req.raw.decode_content = True
+    img = Image.open(req.raw)
+    return img
 
 """ Saving picture on disk. Loop breaks showing afterwads"""
 
-picture = open('cat.png', 'wb')
-# for chunk in cat:
-cat_img.save(picture)
-picture.close()
+cat_img = grab_image(cat_link)
+file_pic = open('cat.png', 'wb')
+cat_img.save(file_pic)
+file_pic.close()
 
-# cat.raw.decode_content = True
-# cat.seek(0)  # Not working
-
-cat_img.show()
-plt.imshow(cat_img)
+# cat_img.show()  # Pillow
+plt.imshow(cat_img)  # Ploting
 plt.show()
 
 
