@@ -12,12 +12,10 @@ cat_link = r'https://proxy.duckduckgo.com/iu/?u=http%3A%2F%2Fimages.wisegeek.com
 
 def grab_image(url):
     req = requests.get(url, stream=True)
-    if req.status_code == 200:
-        req.raw.decode_content = True
-        img = Image.open(req.raw)
-        return img
-    else:
-        raise BaseException
+    req.raise_for_status()
+    req.raw.decode_content = True
+    img = Image.open(req.raw)
+    return img
 
 def read_key():
     ''' Reading from text file, put key only!'''
