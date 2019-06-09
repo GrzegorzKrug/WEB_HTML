@@ -11,7 +11,7 @@ class FindNews():
     def __init__(self):
         self.duckduck_search = 'https://duckduckgo.com/?q='
 
-    def get_items_by_key(self, soup, *keys):
+    def get_items_by_key(self, soup, *keys, excact_len=False):
         # Grabing items from google
         #
         key_n = len(keys)
@@ -21,22 +21,30 @@ class FindNews():
         items_out = []
         for element in results:
             my_tuple = []
+
             for child in element.children:
+                try:
+                    url = element['href']
+                    # print(str(url))
+                except KeyError:
+                    url = 'Not Found in element'
+                # except TypeError:
+                #     pass
                 if type(child) == bs4.element.Tag:
                     try:
                         abc = [child.text for key in this_keys if child['class'] == key]
                         # if child['class'] == google_title.split() or child['class'] == google_adres.split():
-                        my_tuple.append(abc)
+                        if abc != []:
+                            my_tuple.append(abc)
                         # print(my_tuple)
                     except KeyError:
                         pass
                     pass
             # print(len(my_tuple), key_n)
-            if len(my_tuple) == key_n:
+            if (len(my_tuple) == key_n and excact_len) \
+            or (len(my_tuple) >= 1 and not excact_len):
+                my_tuple.append(url[7:])  # cuting prefix "/url?q="
                 items_out.append(tuple(my_tuple))
-                # print('ITems out =')
-                # print(items_out)
-
         return items_out
 
     def search_in_google(self, soup):
@@ -44,11 +52,10 @@ class FindNews():
         out = []
         google_title = 'BNeawe vvjwJb AP7Wnd'  # Title
         google_adres = 'BNeawe UPmit AP7Wnd'  # URL
-        # out.append(child['href'])
-        items = self.get_items_by_key(soup, google_adres, google_title)
+        gazetapl = 'iUh30'
 
-        for item in items:
-            print(item)
+        items = self.get_items_by_key(soup, google_title)
+
         return out
 
     def search_web(self, query):
