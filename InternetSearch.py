@@ -11,43 +11,6 @@ class FindNews():
     def __init__(self):
         self.duckduck_search = 'https://duckduckgo.com/?q='
 
-    # def download_pictures(self):
-    #     results = thisSoup.find_all("img", src=re.compile("((https)|(www)).*((\.bmp)|(\.jpg)|(\.png))$"))
-    #     for element in results:
-    #         new_url = element.get('src')
-    #         name = os.path.basename(new_url)
-    #
-    #         this_image = grab_image(new_url)
-    #         width, height = this_image.size
-    #         if width > 150 and height > 150:
-    #             with open('pics\\' + name, 'wb') as file:
-    #                 this_image.save(file)
-    #                 print('Saved picture:', file.name)
-    #
-    # def download_a_pictures(self):
-    #     results = thisSoup.find_all("a")
-    #     for element in results:
-    #         # new_url = element.get('src')
-
-        # for child in element.children:
-        #     if type(child) == bs4.element.Tag:
-        #         if child.get('src'):
-        #             new_url = child.get('src')
-        #             name = os.path.basename(new_url)
-        #             name = name.replace('?', '')
-        #
-        #             this_image = grab_image(new_url)
-        #             width, height = this_image.size
-        #
-        #             if width > 150 and height > 150:
-        #                 this_type = name[-3:]
-        #                 if not('png' in this_type or 'bmp' in this_type or 'jpg' in this_type or 'png' in this_type):
-        #                     name += '.png'
-        #
-        #                 with open('pics\\' + name, 'wb') as file:
-        #                     this_image.save(file)
-        #                     print('Saved picture:', file.name)
-
     def search_in_google(self, soup):
 
         results = soup.find_all('a')  # Google class
