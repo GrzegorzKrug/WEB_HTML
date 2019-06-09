@@ -11,17 +11,44 @@ class FindNews():
     def __init__(self):
         self.duckduck_search = 'https://duckduckgo.com/?q='
 
+    def get_items_by_key(self, soup, *keys):
+        # Grabing items from google
+        #
+        key_n = len(keys)
+        this_keys = [key.split() for key in keys]
+        results = soup.find_all('a')
+
+        items_out = []
+        for element in results:
+            my_tuple = []
+            for child in element.children:
+                if type(child) == bs4.element.Tag:
+                    try:
+                        abc = [child.text for key in this_keys if child['class'] == key]
+                        # if child['class'] == google_title.split() or child['class'] == google_adres.split():
+                        my_tuple.append(abc)
+                        # print(my_tuple)
+                    except KeyError:
+                        pass
+                    pass
+            # print(len(my_tuple), key_n)
+            if len(my_tuple) == key_n:
+                items_out.append(tuple(my_tuple))
+                # print('ITems out =')
+                # print(items_out)
+
+        return items_out
+
     def search_in_google(self, soup):
 
-        results = soup.find_all('a')  # Google class
         out = []
-        for element in results:
-            for child in element.children:
-                if type(child) == bs4.element.Tag and child.get('href'):
-                    out.append(child['href'])
-                pass
+        google_title = 'BNeawe vvjwJb AP7Wnd'  # Title
+        google_adres = 'BNeawe UPmit AP7Wnd'  # URL
+        # out.append(child['href'])
+        items = self.get_items_by_key(soup, google_adres, google_title)
 
-
+        for item in items:
+            print(item)
         return out
 
     def search_web(self, query):
@@ -50,11 +77,7 @@ class FindNews():
 # link2 = 'https://steamcommunity.com/market/listings/730/Gamma%20Case%20Key'
 # link3 = 'https://memy.jeja.pl/'
 
-
-
 # thisSoup = bs4.BeautifulSoup(r.text, "html.parser")  # as ebook says r.text !
-
-
 
 # price_sell_table = thisSoup.select('#market_commodity_forsale_table')
 # table = thisSoup.find(lambda tag: tag.name=='market_commodity_forsale_table' and tag.has_attr('id') and tag['id']=="market_commodity_forsale_table")

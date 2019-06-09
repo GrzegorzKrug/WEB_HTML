@@ -21,7 +21,6 @@ def download_pictures():
                 print('Saved picture:', file.name)
 
 
-
 def download_a_pictures():
     results = thisSoup.find_all("a")
     for element in results:
@@ -46,16 +45,19 @@ def download_a_pictures():
                             this_image.save(file)
                             print('Saved picture:', file.name)
 
+
 def grab_title(soup):
     # Compatible with RMF24 Web Page
     results = soup.find_all(attrs='article-title')
     return results
+
 
 def grab_web(url):
     req = requests.get(url, stream=True)
     req.raise_for_status()
     req.raw.decode_content = True
     return req
+
 
 link_market = 'https://steamcommunity.com/market/search?q=&category_730_ItemSet%5B%5D=any&category_730_ProPlayer%5B%5D=any&category_730_StickerCapsule%5B%5D=any&category_730_TournamentTeam%5B%5D=any&category_730_Weapon%5B%5D=any&appid=730'
 link2 = 'https://steamcommunity.com/market/listings/730/Gamma%20Case%20Key'
