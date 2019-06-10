@@ -22,13 +22,17 @@ class FindNews():
         #
         # returns [items^n, href_link]
         key_n = len(keys)
-        this_keys = [key.split() for key in keys.values()]
-        # print(this_keys)
+        splited_keys = {}
+        items_out = {}
+        for key, value in keys.items():
+            splited_keys.update({key: value.split()})
+            # items_out.update()
+            # this_keys = [key.split() for key in keys.values()]
+
         results = soup.find_all('a')
 
-        items_out = []
         for element in results:
-            my_tuple = []
+            my_tuple = {}
 
             for child in element.children:
                 try:
@@ -38,33 +42,38 @@ class FindNews():
 
                 if type(child) == bs4.element.Tag:
                     try:
-                        # abc = [child.text for key in this_keys if child['class'] == key]
-                        for key in this_keys:
-                            if child['class'] == key:
-                                my_tuple.append(child.text)
-
+                        for key, value in splited_keys.items():
+                            if child['class'] == value:
+                                pass
+                                my_tuple.update({key:child.text})
                     except KeyError:
                         pass
                     pass
             # print(len(my_tuple), key_n)
             if (len(my_tuple) == key_n and excact_len) \
             or (len(my_tuple) >= 1 and not excact_len):
-                my_tuple.append(url[7:])  # cuting prefix "/url?q="
-                items_out.append(tuple(my_tuple))
+                for key, value in my_tuple.items():
+                    # current_list = items_out.get(key, []) + [value]
+                    # current_list.append(value)
+                    items_out.update({key:items_out.get(key, []) + [value]})
+
+                    # new_dict = {**items_out, key: value, **other_new_vals_as_dict}
+                    # items_out.update({key:current_list})
+
+                items_out.update({'url': items_out.get('url', []) + [url[7:]]})
+                # items_out['href'] = items_out.get('href', []).append(url[7:])
+                # cuting prefix "/url?q="
+
+        print(items_out)
         return items_out
 
     def search_in_google_html(self, soup):
 
-
         google_title = 'BNeawe vvjwJb AP7Wnd'  # Google Title
-        # google_adres = 'BNeawe UPmit AP7Wnd'  # Google URL
-
-        items = self.get_items_by_key(soup, **{'google_title':google_title})
-
+        items = self.get_items_by_key(soup, **{'title':google_title})
         return items
 
     def search_web(self, urls):
-
         if type(urls) is str:
             urls = [urls]
 
@@ -90,28 +99,29 @@ class FindNews():
         print('Got links!')
         yield
 
-        #2
+        #2 Select results by user
         while True:
             print('Select web to grab news')
-            for i, item in enumerate(result):
-                print(' {0}#'.format(i).ljust(5), item[0])
+            for i, title in enumerate(result['title']):
+                print(' {0}#'.format(i).ljust(5), title)
             choice = input("Give separate numbers or '*' to read all.\n")
 
             if 'all' in choice.lower() or choice == '*':
-                choice = range(len(result))
+                choice = range(len(result['url']))
                 break
             else:
                 choice = re.findall('\d+', choice)
                 if choice != []:
                     choice = [int(num) for num in choice]
                     break
-
+        print('Your choice', choice)
         for ch in  choice:
             try:
-                print(result[ch][1])
+                print(result['url'][ch])
             except IndexError:
                 print('IndexError: invalid index ', ch)
                 continue
+
 
 # price_sell_table = thisSoup.select('#market_commodity_forsale_table')
 # table = thisSoup.find(lambda tag: tag.name=='market_commodity_forsale_table' and tag.has_attr('id') and tag['id']=="market_commodity_forsale_table")
