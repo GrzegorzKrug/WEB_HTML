@@ -14,13 +14,16 @@ import bs4
 
 
 class FindNews():
+    # Class to read news from diffrent places in net
+    #
     def __init__(self):
         self.duckduck_search = 'https://duckduckgo.com/?q='
 
     def get_items_by_key(self, soup, excact_len=False, *args, **keys):
-        # Grabing items by keys
+        # Filtering soupt to find interesting items
+        # IN Soup, {Keys}
+        # OUT {key:[items], 'url':[href_links]}
         #
-        # returns [items^n, href_link]
         key_n = len(keys)
         splited_keys = {}
         items_out = {}
@@ -68,12 +71,18 @@ class FindNews():
         return items_out
 
     def search_in_google_html(self, soup):
-
+        # Filtering Soup to find interesting items
+        # Class
+        #
         google_title = 'BNeawe vvjwJb AP7Wnd'  # Google Title
         items = self.get_items_by_key(soup, **{'title':google_title})
         return items
 
     def search_web(self, urls):
+        # Pulling soups from web,
+        # IN 'url' or [url_0, .., url_n]
+        # OUT [soup_0, .., soup_n]
+        #
         if type(urls) is str:
             urls = [urls]
 
@@ -86,6 +95,8 @@ class FindNews():
             yield soup
 
     def start_searching(self):
+        # Generator to use methods in strict order
+        #
         #0 Grabing Google search results
         urls = 'https://www.google.com/search?source=hp&ei=Y3z9XKLfM5GOrwTjjK_wCA&q=wiadomo%C5%9Bci&oq=wiad&gs_l' \
                '=psy-ab.3.0.0i67j0i131i67j0i131l5j0l3.197.1046..1492...0.0..0.144.571.0j5......0....1..gws-wiz.....0..' \
@@ -127,10 +138,8 @@ class FindNews():
 # table = thisSoup.find(lambda tag: tag.name=='market_commodity_forsale_table' and tag.has_attr('id') and tag['id']=="market_commodity_forsale_table")
 # rows = table.findAll(lambda tag: tag.name=='tr')
 
-
+' Application '
 app = FindNews()
-
-# app = FindNews.start_searching()
 end_flag = False
 
 while True:
@@ -142,5 +151,4 @@ while True:
         break
 
     input('Loop again...')
-
 print('End of excecution...')
