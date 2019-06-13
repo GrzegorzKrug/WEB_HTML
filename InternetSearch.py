@@ -88,8 +88,8 @@ class FindNews():
             urls = [urls]
 
         print('Request links:')
-        for u in urls:
-            print(u)
+        # for u in urls:
+        #     print(u)
         # input()
         for url in urls:
             try:
@@ -102,6 +102,7 @@ class FindNews():
                 print('Status code incorrect:', req.status_code, url)
                 continue
 
+            print(url)
             req.raw.decode_content = True
             soup = bs4.BeautifulSoup(req.text, "html.parser")  # as ebook says r.text !
             yield soup
