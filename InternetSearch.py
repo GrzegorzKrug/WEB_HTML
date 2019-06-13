@@ -1,10 +1,8 @@
-# from time import time
-# now = time()
-
-import numpy as np
+# import numpy as np
 # import shutil
-# import os
+from time import sleep
 import re
+# import time
 # import json
 import requests
 import bs4
@@ -93,19 +91,20 @@ class FindNews():
         # input()
         for url in urls:
             try:
-                req = requests.get(url, True)
+                req = requests.get(url)
             except:
-                print('Type Error:', url)
+                # print('Type Error:', url)
                 continue
 
             if req.status_code != 200:
-                print('Status code incorrect:', req.status_code, url)
+                # print('Status code incorrect:', req.status_code, url)
                 continue
 
-            print(url)
+            print('\t', url)
             req.raw.decode_content = True
             soup = bs4.BeautifulSoup(req.text, "html.parser")  # as ebook says r.text !
             yield soup
+
 
     def start_searching(self):
         # Generator to use methods in strict order
@@ -148,7 +147,9 @@ class FindNews():
         urls = result['address']
 
         for soup in self.search_web(urls):
-            print("Searching")
+            print("Got Soup!")
+
+
 
 
 # price_sell_table = thisSoup.select('#market_commodity_forsale_table')
