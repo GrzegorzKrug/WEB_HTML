@@ -75,7 +75,8 @@ class FindNews():
         # Class
         #
         google_title = 'BNeawe vvjwJb AP7Wnd'  # Google Title
-        items = self.get_items_by_key(soup, **{'title':google_title})
+        google_address = 'BNeawe UPmit AP7Wnd'  # URL
+        items = self.get_items_by_key(soup, **{'title':google_title, 'address':google_address})
         return items
 
     def search_web(self, urls):
@@ -91,7 +92,12 @@ class FindNews():
             print(u)
         # input()
         for url in urls:
-            req = requests.get(url, True)
+            try:
+                req = requests.get(url, True)
+            except:
+                print('Type Error:', url)
+                continue
+
             if req.status_code != 200:
                 print('Status code incorrect:', req.status_code, url)
                 continue
@@ -121,8 +127,8 @@ class FindNews():
             print('Select web to grab news')
             for i, title in enumerate(result['title']):
                 print(' {0}#'.format(i).ljust(5), title)
-            choice = input("Give separate numbers or '*' to read all.\n")
-
+            # choice = input("Give separate numbers or '*' to read all.\n")
+            choice = '*'  # temporary ovveride
             if 'all' in choice.lower() or choice == '*':
                 choice = range(len(result['url']))
                 break
@@ -135,9 +141,10 @@ class FindNews():
         # Deleting not selected items
         for ch in range(len(result['url'])-1,-1,-1):
             if ch not in choice:
-                del(result['url'][ch])
-                del(result['title'][ch])
-        urls = result['url']
+                for key in result.keys():
+                    result[key][ch]
+
+        urls = result['address']
 
         for soup in self.search_web(urls):
             print("Searching")
