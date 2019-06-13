@@ -86,10 +86,16 @@ class FindNews():
         if type(urls) is str:
             urls = [urls]
 
+        print('Request links:')
+        for u in urls:
+            print(u)
+        # input()
         for url in urls:
-            print('Requesting: {0}'.format(url))
             req = requests.get(url, True)
-            req.raise_for_status()
+            if req.status_code != 200:
+                print('Status code incorrect:', req.status_code, url)
+                continue
+
             req.raw.decode_content = True
             soup = bs4.BeautifulSoup(req.text, "html.parser")  # as ebook says r.text !
             yield soup
@@ -125,13 +131,16 @@ class FindNews():
                 if choice != []:
                     choice = [int(num) for num in choice]
                     break
-        print('Your choice', choice)
-        for ch in  choice:
-            try:
-                print(result['url'][ch])
-            except IndexError:
-                print('IndexError: invalid index ', ch)
-                continue
+
+        # Deleting not selected items
+        for ch in range(len(result['url'])-1,-1,-1):
+            if ch not in choice:
+                del(result['url'][ch])
+                del(result['title'][ch])
+        urls = result['url']
+
+        for soup in self.search_web(urls):
+            print("Searching")
 
 
 # price_sell_table = thisSoup.select('#market_commodity_forsale_table')
