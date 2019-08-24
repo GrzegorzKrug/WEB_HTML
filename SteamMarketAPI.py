@@ -23,10 +23,11 @@ def read_key():
     steam_key =file.read().split()[0]  # Spliting to avoid new lines in text file
     return steam_key
 
-steam_key = read_key()
+##steam_key = read_key()
 
 ''' Grabbing image'''
 cat_img = grab_image(cat_link)
+
 ''' Saving File'''
 file_pic = open('cat.png', 'wb')
 cat_img.save(file_pic)

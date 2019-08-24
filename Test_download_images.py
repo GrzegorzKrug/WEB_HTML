@@ -67,7 +67,7 @@ r = grab_web(link3)
 thisSoup = bs4.BeautifulSoup(r.text, "html.parser")  # as ebook says r.text !
 
 download_pictures()
-download_a_pictures()
+##download_a_pictures()
 
 
 # price_sell_table = thisSoup.select('#market_commodity_forsale_table')
