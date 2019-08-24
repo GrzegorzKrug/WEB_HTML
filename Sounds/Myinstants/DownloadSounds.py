@@ -10,8 +10,7 @@ class DownloadSounds:
     # Class to read news from diffrent places in net
     #
     def __init__(self):
-        self.soundsweb = 'https://www.myinstants.com/search/'
-        # self.soundsweb = 'https://www.myinstants.com/index/pl/?page=199'
+        self.soundsweb = 'https://www.myinstants.com/search/'    
         self.starting_page = 1
         self.base_web = 'https://www.myinstants.com'  # this does not work
         self.base_web_PL = 'https://www.myinstants.com/index/pl'
@@ -41,8 +40,7 @@ class DownloadSounds:
         return name
 
     def download_song(self, url, name):
-        url = self.base_web + url
-        # print(url)
+        url = self.base_web + url    
         req = requests.get(url)
         req.raw.decode_content = True
 
