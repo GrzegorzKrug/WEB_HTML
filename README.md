@@ -8,7 +8,7 @@
 ## Images
 - [x] Downloading and saving images
 - [ ] Downloading images from google
-	-[ ] Integration from other project
+	- [ ] Integration from other project
 		- [x] Searching images with google package
 		- [x] Filtering soup for image links		
 		- [x] Downloading images
