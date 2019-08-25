@@ -7,7 +7,13 @@
 
 ## Images
 - [x] Downloading and saving images
-- [ ] Searching images in google (done in other project, I have to integrate)
+- [ ] Downloading images from google
+	-[ ] Integration from other project
+		- [x] Searching images with google package
+		- [x] Filtering soup for image links		
+		- [x] Downloading images
+		- [ ] Filter invalid images handlers
+			- [ ] Fix exceptions
 
 
 ## Sounds
