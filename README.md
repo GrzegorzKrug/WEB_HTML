@@ -1,7 +1,8 @@
-# HTML 
+# HTML - support modules
+This package contain scripts that helps gathering resources from web.
 
 ## Steam Api
-- [ ] Connect to Market
+- [ ] Connect to market api
 - [ ] Gather data from api
 - [ ] Evaluate predictions
 
@@ -13,7 +14,7 @@
 		- [x] Filtering soup for image links		
 		- [x] Downloading images
 		- [ ] Filter invalid images handlers
-			- [ ] Fix exceptions
+			- [ ] Fix exceptions from PIL module
 
 
 ## Sounds
