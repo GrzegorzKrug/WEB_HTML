@@ -13,4 +13,5 @@
 ## Sounds
 - [ ] Searching sounds
 - [x] Downloading sounds from Myinstants.com
-	-[x] Searching next page
+	- [x] Searching next page
+	- [x] Searching next songs
