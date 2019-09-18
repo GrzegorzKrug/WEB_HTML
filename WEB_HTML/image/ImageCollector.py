@@ -21,10 +21,9 @@ def grab_image_from_url(url, minimal_size=(100, 100)):
 
         if width < minimal_size[0] or height < minimal_size[1]:  # Picture too small
             return None
-
-        # print('\t good pic:', url)
         return img
-    except ValueError:  # Broad exception
+
+    except (ValueError, TypeError, IOError) as e:
         print('Exception, image url invalid:', url)
 
 
@@ -43,15 +42,16 @@ def validate_url(url):
     return url, re.match(regex, url) is not None
 
 
-def search_google_image(MyRes, query='None', stop=5):
-    MyRes.jobs.lock()
+def search_images_with_google(query='None', stop_page=5):
     # print('searching', query, stop)
-    urls = [*search_images(query, stop=stop)]
-    for url in urls:
-        # print(url)
-        MyRes.jobs += [{'url': url, 'query': query, 'type': 'image'}]
-    MyRes.jobs.unlock()
-    return 'Added new jobs: ' + str(len(urls)), 'All jobs: ' + str(len(MyRes.jobs))
+    data = [{'url': url, 'query': query, 'type': 'image'} for url in search_images(query, stop=stop_page)]
+    return data
+
+
+def search_urls_with_google(query='None', stop_page=5):
+    # print('searching', query, stop)
+    data = [{'url': url, 'query': query, 'type': 'image'} for url in search(query, stop=stop_page)]
+    return data
 
 
 def find_images_on_site(web_url, name='None'):
@@ -72,15 +72,26 @@ def find_images_on_site(web_url, name='None'):
 
         if im is None:
             continue
-        save_pic_in_folder(im, name)
+        yield im
 
 
-def save_pic_in_folder(im, name):
-    path = os.path.join(os.path.dirname(__file__), '..', 'pictures', name)
+def save_pic_in_folder(im, dir, timestamp_or_name=None):
+    if not timestamp_or_name:
+        timestamp_or_name = str(time.time())
+    # path = os.path.join(os.path.dirname(__file__), '..', 'pictures', dir)
+    path = os.path.join(os.path.dirname(__file__), 'pictures', dir)
     os.makedirs(path, exist_ok=True)
-    with open(path + '\\' + str(time.time()) + '.png', 'wb') as file:
+    with open(path + '\\' + timestamp_or_name + '.png', 'wb') as file:
         im.save(file)
 
+def run():
+    print('What u want to search? ')
+    query = input()
+    data = search_images_with_google(query)
+    for x in data:
+        for im in find_images_on_site(x['url'], x['query']):
+            save_pic_in_folder(im, x['query'])
 
 if __name__ == '__main__':
-    print('Main!')
+    run()
+
