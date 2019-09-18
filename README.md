@@ -8,13 +8,14 @@ This package contain scripts that helps gathering resources from web.
 
 ## Images
 - [x] Downloading and saving images
-- [ ] Downloading images from google
-	- [ ] Integration from other project
+- [x] Downloading images from google
+	- [x] Integration from other project
 		- [x] Searching images with google package
 		- [x] Filtering soup for image links		
 		- [x] Downloading images
-		- [ ] Filter invalid images handlers
-			- [ ] Fix exceptions from PIL module
+		- [x] Filter invalid images handlers
+			- [x] Fix exceptions from PIL module
+- [ ] Check duplicates somehow
 
 
 ## Sounds
