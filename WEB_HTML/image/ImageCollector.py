@@ -75,13 +75,13 @@ def find_images_on_site(web_url, name='None'):
         yield im
 
 
-def save_pic_in_folder(im, dir, timestamp_or_name=None):
-    if not timestamp_or_name:
-        timestamp_or_name = str(time.time())
+def save_pic_in_folder(im, dir, name=None):
+    if not name:
+        name = str(time.time())
     # path = os.path.join(os.path.dirname(__file__), '..', 'pictures', dir)
     path = os.path.join(os.path.dirname(__file__), 'pictures', dir)
     os.makedirs(path, exist_ok=True)
-    with open(path + '\\' + timestamp_or_name + '.png', 'wb') as file:
+    with open(path + '\\' + name + '.png', 'wb') as file:
         im.save(file)
 
 def run():
