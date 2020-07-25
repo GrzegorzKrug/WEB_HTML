@@ -46,7 +46,8 @@ class DownloadSounds:
 
         name = self.filter_name(name)
         try:
-            with open(self.sound_dir + '\\' + name + '.mp3', 'wb') as file:
+            file_path = os.path.join(self.sound_dir , name + '.mp3')
+            with open(file_path, 'wb') as file:
                 file.write(req.content)
         except PermissionError:
             input('Downlaod Failed! Close file:', name)
