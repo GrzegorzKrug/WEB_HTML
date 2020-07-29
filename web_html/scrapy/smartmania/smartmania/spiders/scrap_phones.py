@@ -1,11 +1,9 @@
 import logging
 import scrapy
-import time
-import bs4
 import os
 import re
 
-PHONES = ['xiaomi', 'samsung', 'lg']
+ALLOWED_COMPANIES = ['google', 'samsung', 'lg', 'xiaomi']
 
 
 def define_logger(name):
@@ -23,7 +21,6 @@ def define_logger(name):
 
     # custom_logger.addHandler(ch)
     custom_logger.addHandler(fh)
-    # custom_logger.propagate = False
 
     return custom_logger
 
@@ -33,96 +30,111 @@ class GSMArenaSpider(scrapy.Spider):
     main_url = r'https://smartmania.cz/zarizeni/telefony/'
     my_logger = define_logger("logs")
 
+    # starts
     def start_requests(self):
         url = GSMArenaSpider.main_url
         self.my_logger.debug(f"Starting Scrapy @ {url}")
-        yield scrapy.Request(url=url, callback=self.parse_companies, errback=self.errback_httpbin)
+        yield scrapy.Request(url=url, callback=self.parse_pages, errback=self.errback_httpbin)
 
     def parse_companies(self, response):
-        body = response.text
+        """This finds every link to company products, smartwatches also!!!"""
+
         self.my_logger.debug(f"Parsing companies from: {response.url}")
 
-        # with open("last.txt", 'wt') as file:
-        #     file.write("pipe broken")
-
-        soup = bs4.BeautifulSoup(body, parser='html-parser', features="lxml")
         find_class = r"aps-brands-list aps-brands-v-list"
-        results = soup.find_all(attrs={'class': find_class})[0].find_all('a')
-        for res in results:
-            text = str(res)
-            try:
-                found_url = re.findall(f'href="(.*)"', text)[0]
-                skip = True
-                for ph in PHONES:
-                    if ph in found_url:
-                        skip = False
-                        break
+        results = response.xpath(f"//ul[@class='{find_class}']//a").css("::attr(href)").extract()
 
-                if skip:
-                    continue
-            except IndexError:
+        for full_url in results:
+            skip = True
+            for company in ALLOWED_COMPANIES:
+                if company in full_url:
+                    skip = False
+                    break
+            if skip:
                 continue
 
-            full_url = found_url
-            self.my_logger.info(f"Found url: {full_url}")
-
-            self.my_logger.debug(f"Yielding pages")
-            yield scrapy.Request(url=full_url, callback=self.parse_pages, errback=self.errback_httpbin)
-
-            self.my_logger.debug(f"Yielding links")
-            yield scrapy.Request(url=full_url, callback=self.parse_phone_links, errback=self.errback_httpbin)
+            self.my_logger.info(f"Found matching company: {full_url}")
+            yield scrapy.Request(url=full_url, dont_filter=True,
+                                 callback=self.parse_pages, errback=self.errback_httpbin)
 
     def parse_pages(self, response):
         self.my_logger.debug(f"Searching pages: {response.url}")
-        text = response.text
-        soup = bs4.BeautifulSoup(text, parser='html-parser', features='lxml')
 
         class_name = "aps-pagination"
         try:
-            result = soup.find_all(attrs={'class': class_name})[0].find_all('a')
+            result = response.xpath(f"//div[@class='{class_name}']/a").css("::attr(href)").extract()
         except IndexError:
+            self.my_logger.error(f"Index error when searching for pages: {response.url}")
             return None
 
-        for page in result:
-            # self.my_logger.error(f"{page}")
-            if "next page-numbers" in str(page):
-                continue
-            try:
-                found_url = re.findall(f'href="(.*)"', str(page))[0]
-                self.my_logger.info(f"Found url: {found_url}")
-            except IndexError:
-                continue
-        # with open()
+        result = list(set(result))
+        for url in result:
+            self.my_logger.info(f"Found pages: {url}")
+            yield scrapy.Request(url=url, callback=self.parse_phone_links, errback=self.errback_httpbin,
+                                 dont_filter=True)
+
+            yield scrapy.Request(url=url, callback=self.parse_pages, errback=self.errback_httpbin, dont_filter=False)
 
     def parse_phone_links(self, response):
-        self.my_logger.info(f"Searching links: {response.url}")
+        self.my_logger.debug(f"Searching links: {response.url}")
+        phones_grid = "aps-products aps-row clearfix aps-products-grid"
+        phone_class = "aps-product-title"
+        results = response.xpath(f"//ul[@class='{phones_grid}']//h2[@class='{phone_class}']").css(
+                "::attr(href)").extract()
+
+        for url in results:
+            self.my_logger.info(f"Found phone url: {url}")
+            allow = False
+            for cmp in ALLOWED_COMPANIES:
+                if cmp in url.lower():
+                    allow = True
+                    break
+            if not allow:
+                continue
+
+            yield scrapy.Request(url=url, callback=self.parse_phone_specs, errback=self.errback_httpbin)
 
     def parse_phone_specs(self, response):
-        pass
+        tag_name = "aps-main-title"
+        tag_table = "aps-features-iconic"
+
+        phone = response.xpath(f"//h1[@class='{tag_name}']").css("::text").extract()[0]
+        table = response.xpath(f"//ul[@class='{tag_table}']//strong[@class='aps-feature-vl']").css("::text").extract()
+
+        screen_size = table[0]
+        resolution = table[1]
+        cpu = table[1]
+        camera = table[2]
+        mems = table[3].split(',')
+
+        if len(mems) == 2:
+            ram, memory = mems
+        else:
+            ram, memory, _ = mems
+
+        battery = table[4]
+        os_sys = table[5]
+
+        with open(f"all_phones.csv", 'at') as file:
+            file.write(f"{phone};")
+            file.write(f"{response.url};")
+            file.write(f"{screen_size};")
+            file.write(f"{resolution};")
+            file.write(f"{cpu};")
+            file.write(f"{camera};")
+            file.write(f"{ram};")
+            file.write(f"{memory};")
+            file.write(f"{battery};")
+            file.write(f"{os_sys};")
+            file.write('\n')
+
+        self.my_logger.debug(f"Found phone: {phone}")
 
     def errback_httpbin(self, failure):
-        # log all failures
         url = failure.request.url
         callback = failure.request.callback
+        errback = failure.request.errback  # should work same way as callback... ?
         status = failure.value.response.status
-        self.my_logger.error(f"Fail status: {status} to get: {url}")
-        # self.logger.error(f'Status code: {status}')
+        self.my_logger.error(f"Fail status: {status} @: {url}")
 
-        #
-        # # in case you want to do something special for some errors,
-        # # you may need the failure's type:
-        #
-        # if failure.check(HttpError):
-        #     # these exceptions come from HttpError spider middleware
-        #     # you can get the non-200 response
-        #     response = failure.value.response
-        #     self.logger.error('HttpError on %s', response.url)
-        #
-        # elif failure.check(DNSLookupError):
-        #     # this is the original request
-        #     request = failure.request
-        #     self.logger.error('DNSLookupError on %s', request.url)
-        #
-        # elif failure.check(TimeoutError, TCPTimedOutError):
-        #     request = failure.request
-        #     self.logger.error('TimeoutError on %s', request.url)
+        # Do some stuff
