@@ -18,6 +18,7 @@ def define_logger(name):
     formatter = logging.Formatter(
             f'%(asctime)s - {name} - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
+    # fh.setLevel("INFO")
     ch.setFormatter(formatter)
 
     # custom_logger.addHandler(ch)
@@ -34,15 +35,15 @@ class GSMArenaSpider(scrapy.Spider):
 
     def start_requests(self):
         url = GSMArenaSpider.main_url
-        self.my_logger.error(f"start - {url}")
+        self.my_logger.debug(f"Starting Scrapy @ {url}")
         yield scrapy.Request(url=url, callback=self.parse_companies, errback=self.errback_httpbin)
 
     def parse_companies(self, response):
         body = response.text
-        self.my_logger.error(f"Parsing companies: {response.url}")
+        self.my_logger.debug(f"Parsing companies from: {response.url}")
 
-        with open("last.txt", 'wt') as file:
-            file.write("pipe broken")
+        # with open("last.txt", 'wt') as file:
+        #     file.write("pipe broken")
 
         soup = bs4.BeautifulSoup(body, parser='html-parser', features="lxml")
         find_class = r"aps-brands-list aps-brands-v-list"
@@ -61,17 +62,18 @@ class GSMArenaSpider(scrapy.Spider):
                     continue
             except IndexError:
                 continue
+
             full_url = found_url
             self.my_logger.info(f"Found url: {full_url}")
 
-            self.my_logger.error(f"Yielding pages")
+            self.my_logger.debug(f"Yielding pages")
             yield scrapy.Request(url=full_url, callback=self.parse_pages, errback=self.errback_httpbin)
 
-            self.my_logger.error(f"Yielding links")
+            self.my_logger.debug(f"Yielding links")
             yield scrapy.Request(url=full_url, callback=self.parse_phone_links, errback=self.errback_httpbin)
 
     def parse_pages(self, response):
-        self.my_logger.error(f"pages: {response.url}")
+        self.my_logger.debug(f"Searching pages: {response.url}")
         text = response.text
         soup = bs4.BeautifulSoup(text, parser='html-parser', features='lxml')
 
@@ -87,13 +89,13 @@ class GSMArenaSpider(scrapy.Spider):
                 continue
             try:
                 found_url = re.findall(f'href="(.*)"', str(page))[0]
-                self.my_logger.error(f"{found_url}")
+                self.my_logger.info(f"Found url: {found_url}")
             except IndexError:
                 continue
         # with open()
 
     def parse_phone_links(self, response):
-        self.my_logger.info(f"Phone links to find: {response.url}")
+        self.my_logger.info(f"Searching links: {response.url}")
 
     def parse_phone_specs(self, response):
         pass
