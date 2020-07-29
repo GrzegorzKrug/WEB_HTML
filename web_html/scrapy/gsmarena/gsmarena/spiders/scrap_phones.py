@@ -1,71 +1,110 @@
+import logging
 import scrapy
 import time
 import bs4
+import os
 import re
+
+PHONES = ['xiaomi', 'samsung', 'lg']
+
+
+def define_logger(name):
+    custom_logger = logging.getLogger(name)
+    file_path = name + '.log'
+
+    fh = logging.FileHandler(file_path, mode='w')
+    ch = logging.StreamHandler()
+
+    formatter = logging.Formatter(
+            f'%(asctime)s - {name} - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    ch.setFormatter(formatter)
+
+    # custom_logger.addHandler(ch)
+    custom_logger.addHandler(fh)
+    # custom_logger.propagate = False
+
+    return custom_logger
 
 
 class GSMArenaSpider(scrapy.Spider):
-    name = "gsmarena"
-    main_url = r'https://www.gsmarena.com/'
+    name = "smartmania"
+    main_url = r'https://smartmania.cz/zarizeni/telefony/'
+    my_logger = define_logger("logs")
 
     def start_requests(self):
         url = GSMArenaSpider.main_url
+        self.my_logger.error(f"start - {url}")
         yield scrapy.Request(url=url, callback=self.parse_companies, errback=self.errback_httpbin)
-
-    def phone_models(self):
-        pass
-        r'https://www.gsmarena.com/samsung-phones-9.php'
 
     def parse_companies(self, response):
         body = response.text
-        self.logger.error(f"Parsing companies")
+        self.my_logger.error(f"Parsing companies: {response.url}")
 
         with open("last.txt", 'wt') as file:
             file.write("pipe broken")
 
-        soup = bs4.BeautifulSoup(body, parser='html-parser')
-        find_class = r"brandmenu-v2 light l-box clearfix"
-        results = soup.find_all(attrs={'class': find_class}).find_all('li')
-        with open("last.txt", 'wt') as file:
-            for res in results:
-                text = str(res)
-                try:
-                    url_postfix = re.findall(f'"(.*)"', text)[0]
-                    if 'samsung' in url_postfix or 'xiaomi' in url_postfix:
-                        pass
-                    else:
-                        continue
-                    full_url = self.main_url + url_postfix
-                    file.write(full_url)
-                    scrapy.Request(url=full_url, callback=self.parse_phone_links, errback=self.errback_httpbin)
-                    scrapy.Request(url=full_url, callback=self.parse_pages, errback=self.errback_httpbin)
-                    file.write("\n")
-                except IndexError:
+        soup = bs4.BeautifulSoup(body, parser='html-parser', features="lxml")
+        find_class = r"aps-brands-list aps-brands-v-list"
+        results = soup.find_all(attrs={'class': find_class})[0].find_all('a')
+        for res in results:
+            text = str(res)
+            try:
+                found_url = re.findall(f'href="(.*)"', text)[0]
+                skip = True
+                for ph in PHONES:
+                    if ph in found_url:
+                        skip = False
+                        break
+
+                if skip:
                     continue
+            except IndexError:
+                continue
+            full_url = found_url
+            self.my_logger.info(f"Found url: {full_url}")
+
+            self.my_logger.error(f"Yielding pages")
+            yield scrapy.Request(url=full_url, callback=self.parse_pages, errback=self.errback_httpbin)
+
+            self.my_logger.error(f"Yielding links")
+            yield scrapy.Request(url=full_url, callback=self.parse_phone_links, errback=self.errback_httpbin)
+
+    def parse_pages(self, response):
+        self.my_logger.error(f"pages: {response.url}")
+        text = response.text
+        soup = bs4.BeautifulSoup(text, parser='html-parser', features='lxml')
+
+        class_name = "aps-pagination"
+        try:
+            result = soup.find_all(attrs={'class': class_name})[0].find_all('a')
+        except IndexError:
+            return None
+
+        for page in result:
+            # self.my_logger.error(f"{page}")
+            if "next page-numbers" in str(page):
+                continue
+            try:
+                found_url = re.findall(f'href="(.*)"', str(page))[0]
+                self.my_logger.error(f"{found_url}")
+            except IndexError:
+                continue
+        # with open()
+
+    def parse_phone_links(self, response):
+        self.my_logger.info(f"Phone links to find: {response.url}")
 
     def parse_phone_specs(self, response):
         pass
 
-    def parse_pages(self, response):
-        text = response.text
-        soup = bs4.BeautifulSoup(text, parser='html-parser')
-        result = soup.find_all(attrs={'class': 'nav-pages'})
-
-        soup = bs4.BeautifulSoup(str(result), parser='html-parser')
-        result = soup.find_all(attrs={'class': 'nav-pages'})
-
-        # with open()
-
-    def parse_phone_links(self, response):
-        pass
-
     def errback_httpbin(self, failure):
         # log all failures
-        url = failure.request
+        url = failure.request.url
         callback = failure.request.callback
         status = failure.value.response.status
-
-        self.logger.error(f'Status code: {status}')
+        self.my_logger.error(f"Fail status: {status} to get: {url}")
+        # self.logger.error(f'Status code: {status}')
 
         #
         # # in case you want to do something special for some errors,
