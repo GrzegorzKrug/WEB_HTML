@@ -4,6 +4,13 @@ import os
 import re
 
 ALLOWED_COMPANIES = ['google', 'samsung', 'lg', 'xiaomi']
+ALLOWED_MODELS = [
+    "a51",   'a41',  'a21', 'a20',
+    "z flip",
+    's10', 's20', "galaxy note",
+    "redmi note", 'redmi 8', 'redmi 7',
+    'mi note 10'
+]
 
 
 def define_logger(name):
@@ -14,7 +21,7 @@ def define_logger(name):
     ch = logging.StreamHandler()
 
     formatter = logging.Formatter(
-            f'%(asctime)s - {name} - %(levelname)s - %(message)s')
+        f'%(asctime)s - {name} - %(levelname)s - %(message)s')
     fh.setFormatter(formatter)
     # fh.setLevel("INFO")
     ch.setFormatter(formatter)
@@ -34,6 +41,10 @@ class GSMArenaSpider(scrapy.Spider):
     def start_requests(self):
         url = GSMArenaSpider.main_url
         self.my_logger.debug(f"Starting Scrapy @ {url}")
+
+        with open("all_phones.csv", 'w') as file:
+            pass
+
         yield scrapy.Request(url=url, callback=self.parse_pages, errback=self.errback_httpbin)
 
     def parse_companies(self, response):
@@ -80,7 +91,7 @@ class GSMArenaSpider(scrapy.Spider):
         phones_grid = "aps-products aps-row clearfix aps-products-grid"
         phone_class = "aps-product-title"
         results = response.xpath(f"//ul[@class='{phones_grid}']//h2[@class='{phone_class}']").css(
-                "::attr(href)").extract()
+            "::attr(href)").extract()
 
         for url in results:
             self.my_logger.info(f"Found phone url: {url}")
@@ -114,6 +125,9 @@ class GSMArenaSpider(scrapy.Spider):
 
         battery = table[4]
         os_sys = table[5]
+
+        if ALLOWED_MODELS and not any([model.lower() in phone.lower() for model in ALLOWED_MODELS]):
+            return None
 
         with open(f"all_phones.csv", 'at') as file:
             file.write(f"{phone};")
